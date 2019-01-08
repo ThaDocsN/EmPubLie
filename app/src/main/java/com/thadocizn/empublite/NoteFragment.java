@@ -1,21 +1,61 @@
 package com.thadocizn.empublite;
 
 import android.app.Fragment;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ShareActionProvider;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-public class NoteFragment extends Fragment {
+public class NoteFragment extends Fragment implements TextWatcher {
     private static final String KEY_POSITION = "position";
     private EditText editor = null;
+    private ShareActionProvider share = null;
+    private Intent shareIntent = new Intent(Intent.ACTION_SEND).setType("text/plain");
+
+    private Contract getContract(){
+        return ((Contract)getActivity());
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.notes, menu);
+        share = (ShareActionProvider) menu.findItem(R.id.share)
+                .getActionProvider();
+        share.setShareIntent(shareIntent);
+
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.delete){
+            editor.setText(null);
+            getContract().closeNotes();
+
+            return (true);
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
     @Override
     public void onStart() {
@@ -60,10 +100,32 @@ public class NoteFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         View result = inflater.inflate(R.layout.editor, container, false);
         editor = result.findViewById(R.id.editor);
+        editor.addTextChangedListener(this);
+
         return (result);
     }
 
     private int getPosition(){
         return (getArguments().getInt(KEY_POSITION, -1));
+    }
+
+    @Override
+    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+    }
+
+    @Override
+    public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+    }
+
+    @Override
+    public void afterTextChanged(Editable s) {
+
+        shareIntent.putExtra(Intent.EXTRA_TEXT, s.toString());
+    }
+
+    public interface Contract{
+        void closeNotes();
     }
 }

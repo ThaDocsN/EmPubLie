@@ -71,6 +71,9 @@ public class EmPubLiteActivity extends Activity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.update:
+                startService(new Intent(this, DownloadCheckService.class));
+                return (true);
             case R.id.notes:
                 startActivity(new Intent(this, NoteActivity.class)
                 .putExtra(NoteActivity.EXTRA_POSITION, pager.getCurrentItem()));
